@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from config import OUTPUT_FILE_FULL_PATH, COL_COUNTRY, COL_FILE_ID, COL_RANK, COL_HAPPINESS
+from config import OUTPUT_FILE_FULL_PATH, ANALYSIS_COLUMNS, COL_COUNTRY, COL_FILE_ID, COL_RANK, COL_HAPPINESS, COL_GDP
 
 # -------------------------
 # Load data
@@ -23,13 +23,6 @@ st.sidebar.header("Filters")
 
 years = sorted(combined_years_df[COL_FILE_ID].unique())
 selected_year = st.sidebar.selectbox("Select Year", years)
-
-countries = sorted(combined_years_df[COL_COUNTRY].unique())
-selected_countries = st.sidebar.multiselect(
-    "Select Countries (for trends)",
-    countries,
-    default=["Israel", "United States"]
-)
 
 # -------------------------
 # Filtered data
@@ -82,96 +75,61 @@ plot_df = top_df[[COL_COUNTRY] + factor_cols].set_index(COL_COUNTRY)
 # -------------------------
 # Plot stacked horizontal bar
 # -------------------------
-fig2, ax2 = plt.subplots(figsize=(10, 6))
+fig1b, ax1b = plt.subplots(figsize=(10, 6))
 
 plot_df.plot(
     kind="barh",
     stacked=True,
-    ax=ax2
+    ax=ax1b
 )
 
-ax2.set_title(f"Top N Happiest Countries By Factor")
-ax2.set_xlabel("Factor Contribution")
-ax2.set_ylabel("Country")
-ax2.invert_yaxis()
+ax1b.set_title(f"Top N Happiest Countries By Factor")
+ax1b.set_xlabel("Factor Contribution")
+ax1b.set_ylabel("Country")
+ax1b.invert_yaxis()
 
 # Move the legend so it won't interfere with the data
-ax2.legend(
+ax1b.legend(
     title="Factors",
     bbox_to_anchor=(1.02, 1),
     loc="upper left"
 )
 
-st.pyplot(fig2)
+st.pyplot(fig1b)
 
 # -------------------------
-# 2. Happiness Trend Over Time
-# -------------------------
-# st.subheader("📈 Happiness Trend Over Time")
-#
-# trend_df = combined_years_df[
-#     combined_years_df["country"].isin(selected_countries)
-# ]
-#
-# fig2, ax2 = plt.subplots()
-#
-# for country in selected_countries:
-#     country_df = trend_df[trend_df["country"] == country]
-#     ax2.plot(
-#         country_df["file_id"],
-#         country_df["happiness_score"],
-#         label=country
-#     )
-#
-# ax2.legend()
-# ax2.set_xlabel("Year")
-# ax2.set_ylabel("Happiness Score")
-#
-# st.pyplot(fig2)
-
-# -------------------------
-# 3. GDP vs Happiness Scatter
+# 2. GDP vs Happiness Scatter
 # -------------------------
 st.subheader("💰 GDP vs Happiness")
 
-fig3, ax3 = plt.subplots()
+fig2, ax2 = plt.subplots()
 
-ax3.scatter(
-    df_year["gdp_per_capita"],
-    df_year["happiness_score"]
+ax2.scatter(
+    df_year[COL_GDP],
+    df_year[COL_HAPPINESS]
 )
 
-ax3.set_xlabel("GDP per Capita")
-ax3.set_ylabel("Happiness Score")
+ax2.set_xlabel("GDP per Capita")
+ax2.set_ylabel("Happiness Score")
 
-st.pyplot(fig3)
+st.pyplot(fig2)
 
 # -------------------------
-# 4. Correlation Heatmap
+# 3. Correlation Heatmap
 # -------------------------
 st.subheader("🧠 Correlation Between Factors")
 
-corr_cols = [
-    "happiness_score",
-    "gdp_per_capita",
-    "social_support",
-    "life_expectancy",
-    "freedom",
-    "generosity",
-    "corruption"
-]
+corr = df_year[ANALYSIS_COLUMNS].corr()
 
-corr = df_year[corr_cols].corr()
+fig3, ax3 = plt.subplots()
+cax = ax3.matshow(corr)
 
-fig4, ax4 = plt.subplots()
-cax = ax4.matshow(corr)
+fig3.colorbar(cax)
 
-fig4.colorbar(cax)
+ax3.set_xticks(range(len(ANALYSIS_COLUMNS)))
+ax3.set_yticks(range(len(ANALYSIS_COLUMNS)))
 
-ax4.set_xticks(range(len(corr_cols)))
-ax4.set_yticks(range(len(corr_cols)))
+ax3.set_xticklabels(ANALYSIS_COLUMNS, rotation=45)
+ax3.set_yticklabels(ANALYSIS_COLUMNS)
 
-ax4.set_xticklabels(corr_cols, rotation=45)
-ax4.set_yticklabels(corr_cols)
-
-st.pyplot(fig4)
+st.pyplot(fig3)
