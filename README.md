@@ -7,10 +7,11 @@ This project analyzes global happiness data to understand what factors influence
 World Happiness Report (Kaggle)
 
 ## Key Questions
+- Leaderboard - The happiest countries
+- Irregularities based on survey factors (Dystopia residual) 
 - What factors correlate most with happiness?
 - Are richer countries happier?
 - How has happiness changed over time?
-- Which countries improved the most?
 
 ## Tech Stack
 - Python
@@ -21,10 +22,9 @@ World Happiness Report (Kaggle)
 - data/ → raw & processed data
 - notebooks/ → exploration
 - src/ → reusable code
-- outputs/ → charts & tables
-- report/ → final insights
 
 ## How to Run
 ```bash
 pip install -r requirements.txt
 jupyter notebook
+streamlit run data_visual.py

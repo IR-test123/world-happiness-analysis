@@ -1,17 +1,15 @@
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-import os
+
+from config import OUTPUT_FILE_FULL_PATH, COL_COUNTRY, COL_FILE_ID, COL_RANK, COL_HAPPINESS
 
 # -------------------------
 # Load data
 # -------------------------
 @st.cache_data
 def load_data():
-    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(BASE_DIR, "data", "processed", "combined_years.csv")
-
-    df = pd.read_csv(file_path)
+    df = pd.read_csv(OUTPUT_FILE_FULL_PATH)
     return df
 
 combined_years_df = load_data()
@@ -23,10 +21,10 @@ st.title("🌍 World Happiness Dashboard")
 # -------------------------
 st.sidebar.header("Filters")
 
-years = sorted(combined_years_df["file_id"].unique())
+years = sorted(combined_years_df[COL_FILE_ID].unique())
 selected_year = st.sidebar.selectbox("Select Year", years)
 
-countries = sorted(combined_years_df["country"].unique())
+countries = sorted(combined_years_df[COL_COUNTRY].unique())
 selected_countries = st.sidebar.multiselect(
     "Select Countries (for trends)",
     countries,
@@ -36,7 +34,7 @@ selected_countries = st.sidebar.multiselect(
 # -------------------------
 # Filtered data
 # -------------------------
-df_year = combined_years_df[combined_years_df["file_id"] == selected_year]
+df_year = combined_years_df[combined_years_df[COL_FILE_ID] == selected_year]
 
 
 # -------------------------
@@ -47,7 +45,7 @@ st.subheader(f"🏆 Top Countries in {selected_year}")
 top_n = st.slider("Top N Happiest countries", 20, 50, 10)
 
 top_df = df_year.sort_values(
-    by="happiness_score",
+    by=COL_HAPPINESS,
     ascending=False
 ).head(top_n)
 
@@ -56,7 +54,7 @@ top_df = df_year.sort_values(
 # -------------------------
 
 fig1a, ax1a = plt.subplots()
-ax1a.barh(top_df["country"], top_df["happiness_score"])
+ax1a.barh(top_df[COL_COUNTRY], top_df[COL_HAPPINESS])
 ax1a.invert_yaxis()
 
 st.pyplot(fig1a)
@@ -69,7 +67,7 @@ st.pyplot(fig1a)
 # Columns to stack
 # -------------------------
 
-exclude_cols = ["country", "file_id", "rank", "happiness_score"]
+exclude_cols = [COL_COUNTRY, COL_FILE_ID, COL_RANK, COL_HAPPINESS]
 
 factor_cols = [
     col for col in top_df.select_dtypes(include="number").columns
@@ -79,7 +77,7 @@ factor_cols = [
 # -------------------------
 # Prepare data
 # -------------------------
-plot_df = top_df[["country"] + factor_cols].set_index("country")
+plot_df = top_df[[COL_COUNTRY] + factor_cols].set_index(COL_COUNTRY)
 
 # -------------------------
 # Plot stacked horizontal bar
@@ -92,7 +90,7 @@ plot_df.plot(
     ax=ax2
 )
 
-ax2.set_title(f"Top N Happiest Countries in {selected_year}")
+ax2.set_title(f"Top N Happiest Countries By Factor")
 ax2.set_xlabel("Factor Contribution")
 ax2.set_ylabel("Country")
 ax2.invert_yaxis()

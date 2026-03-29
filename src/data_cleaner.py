@@ -1,4 +1,11 @@
-def normalize_columns(df):
+from pandas import DataFrame
+
+def normalize_columns(df: DataFrame) -> DataFrame:
+    '''
+
+    :param df: Original DataFrame
+    :return: Modified DataFrame - changed column names to a normalized format
+    '''
     df.columns = (
         df.columns
         .str.lower()
@@ -9,34 +16,34 @@ def normalize_columns(df):
     )
     return df
 
+def standardize_df(df: DataFrame, file_id: str, column_mapping: dict, columns_to_keep: list,
+                   col_source_row, col_file_id) -> DataFrame:
+    '''
+    :param df: Original DataFrame
+    :param file_id: String representing the file ID - year of data
+    :param column_mapping: (Changing column names to crate a standardized format for all years)
+    :param columns_to_keep: List of columns to keep - ones that have relevance across all years.
+    :param col_source_row: standard name for column of original row index
+    :param col_file_id: standard name for file ID column - year of data
+    :return: Standardized DataFrame
+    '''
 
-def standardize_df(df, file_id, column_mapping):
+    df = df.copy()
+
+    # Save original row index for debugging
+    df[col_source_row] = df.index
+
     df = normalize_columns(df)
 
     df = df.rename(columns=column_mapping)
 
-    # Keep only relevant columns
-    cols_to_keep = [
-        "country",
-        "rank",
-        "happiness_score",
-        "gdp_per_capita",
-        "social_support",
-        "life_expectancy",
-        "freedom",
-        "generosity",
-        "corruption",
-        "dystopia_residual"
-    ]
-
-    for col in cols_to_keep:
+    for col in columns_to_keep:
         if col not in df.columns:
             df[col] = None
 
-    df = df[cols_to_keep]
+    df = df[[col_source_row] + columns_to_keep]
 
-    df["file_id"] = file_id
+    df[col_file_id] = file_id
 
     return df
-
 

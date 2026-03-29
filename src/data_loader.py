@@ -1,9 +1,6 @@
 from pathlib import Path
 import pandas as pd
 
-RAW_DATA_PATH = "../data/raw"
-
-
 def load_all_csvs(folder_path: str) -> dict:
     '''
 
@@ -18,8 +15,3 @@ def load_all_csvs(folder_path: str) -> dict:
         dfs[key] = pd.read_csv(file)
 
     return dfs
-
-
-raw_data = load_all_csvs(RAW_DATA_PATH)
-
-print(raw_data)
